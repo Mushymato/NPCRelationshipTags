@@ -83,9 +83,16 @@ internal static class TagManager
             return;
         if (!ModEntry.config.EditTagKey.JustPressed())
             return;
+        if (
+            profileMenu.Current == null
+            || profileMenu.Current.InternalName == null
+            || !profileMenu.Current.IsMet
+            || profileMenu.Current.IsPlayer
+        )
+            return;
         EditRelationshipTag(
             profileMenu,
-            profileMenu.Current,
+            profileMenu.Current.InternalName,
             (s) =>
             {
                 if (string.IsNullOrEmpty(s))
@@ -103,15 +110,14 @@ internal static class TagManager
 
     internal static void EditRelationshipTag(
         IClickableMenu priorMenu,
-        SocialPage.SocialEntry socialEntry,
+        string internalName,
         NamingMenu.doneNamingBehavior? postDoneNaming = null
     )
     {
-        string key = socialEntry.InternalName;
-        if (!TryGetTag(socialEntry.InternalName, out string? tagStr))
+        if (!TryGetTag(internalName, out string? tagStr))
             tagStr = "";
-        NamingMenu tagSetMenu = new(null, I18n.Label_SetTag(), tagStr);
-        NamingMenu.doneNamingBehavior doneNaming = (s) => UpdateTag(priorMenu, tagSetMenu, socialEntry.InternalName, s);
+        NamingMenu tagSetMenu = new(null, I18n.Label_EditTag(), tagStr);
+        NamingMenu.doneNamingBehavior doneNaming = (s) => UpdateTag(priorMenu, tagSetMenu, internalName, s);
         if (postDoneNaming != null)
         {
             doneNaming = (NamingMenu.doneNamingBehavior)Delegate.Combine(doneNaming, postDoneNaming);
@@ -163,5 +169,33 @@ internal static class TagManager
         );
         b.DrawString(Game1.smallFont, tag, tagPos, Game1.textColor);
         return false;
+    }
+
+    internal static void AnimalPage_drawNPCTag(
+        AnimalPage animalPage,
+        SpriteBatch b,
+        int i,
+        AnimalPage.AnimalEntry entry
+    )
+    {
+        if (!TryGetTag(entry.InternalName, out string? tagStr))
+            return;
+
+        int maxWidth = IClickableMenu.borderWidth * 3 / 2 + 192 - 20 + 96;
+        string tag = Game1.parseText(I18n.Parentheses(value: tagStr), Game1.smallFont, maxWidth);
+        Vector2 tagSize = Game1.smallFont.MeasureString(tag);
+        float num =
+            (
+                LocalizedContentManager.CurrentLanguageCode == LocalizedContentManager.LanguageCode.ru
+                || LocalizedContentManager.CurrentLanguageCode == LocalizedContentManager.LanguageCode.ko
+            )
+                ? ((0f - smallFontY) / 2f)
+                : 0f;
+        int num2 = (entry.TextureSourceRect.Height <= 16) ? (-40) : 8;
+        Vector2 tagPos = new(
+            animalPage.xPositionOnScreen + maxWidth - tagSize.X / 2f,
+            animalPage.sprites[i].bounds.Y + 48 + num2 + num - 20f - smallFontY + 8
+        );
+        b.DrawString(Game1.smallFont, tag, tagPos, Game1.textColor);
     }
 }

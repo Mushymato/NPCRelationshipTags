@@ -1,0 +1,7 @@
+{
+  "$schema": "https://smapi.io/schemas/i18n.json",
+  "parentheses": "（{{value}}）",
+  "label.EditTag": "编辑关系标签",
+  "config.EditTagKey.name": "编辑",
+  "config.EditTagKey.desc": "在社交页面时，按住此键并点击NPC条目以编辑关系标签。\n在角色资料页面中，按此键编辑关系标签。"
+}

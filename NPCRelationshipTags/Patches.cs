@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
-using static StardewValley.Menus.AnimalPage;
 
 namespace NPCRelationshipTags;
 
@@ -27,6 +26,14 @@ internal static class Patches
                 original: AccessTools.DeclaredMethod(typeof(ProfileMenu), "_SetCharacter"),
                 postfix: new HarmonyMethod(typeof(Patches), nameof(ProfileMenu_SetCharacter_Postfix))
             );
+            harmony.Patch(
+                original: AccessTools.DeclaredMethod(typeof(AnimalPage), "drawNPCSlot"),
+                postfix: new HarmonyMethod(typeof(Patches), nameof(AnimalEntry_drawNPCSlot_Postfix))
+            );
+            harmony.Patch(
+                original: AccessTools.DeclaredMethod(typeof(AnimalPage), nameof(AnimalPage.receiveLeftClick)),
+                prefix: new HarmonyMethod(typeof(Patches), nameof(AnimalPage_receiveLeftClick_Postfix))
+            );
         }
         catch (Exception err)
         {
@@ -34,9 +41,35 @@ internal static class Patches
         }
     }
 
-    private static void AnimalEntry_drawNPCSlot_Postfix(SpriteBatch b, int i)
+    private static bool AnimalPage_receiveLeftClick_Postfix(AnimalPage __instance, int x, int y, bool playSound = true)
     {
-        throw new NotImplementedException();
+        if (!ModEntry.config.EditTagKey.IsDown())
+        {
+            return true;
+        }
+        for (int i = 0; i < __instance.characterSlots.Count; i++)
+        {
+            if (
+                i < __instance.slotPosition
+                || i >= __instance.slotPosition + 5
+                || !__instance.characterSlots[i].bounds.Contains(x, y)
+            )
+            {
+                continue;
+            }
+            AnimalPage.AnimalEntry animalEntry = __instance.GetSocialEntry(i);
+            if (animalEntry == null || animalEntry.InternalName == null)
+                continue;
+            TagManager.EditRelationshipTag(Game1.activeClickableMenu, animalEntry.InternalName);
+            return false;
+        }
+        return true;
+    }
+
+    private static void AnimalEntry_drawNPCSlot_Postfix(AnimalPage __instance, SpriteBatch b, int i)
+    {
+        if (__instance.GetSocialEntry(i) is AnimalPage.AnimalEntry entry)
+            TagManager.AnimalPage_drawNPCTag(__instance, b, i, entry);
     }
 
     private static bool SocialPage_receiveLeftClick_Postfix(SocialPage __instance, int x, int y, bool playSound = true)
@@ -56,9 +89,9 @@ internal static class Patches
                 continue;
             }
             SocialPage.SocialEntry socialEntry = __instance.GetSocialEntry(i);
-            if (socialEntry.InternalName == null || !socialEntry.IsMet)
+            if (socialEntry == null || socialEntry.InternalName == null || !socialEntry.IsMet || socialEntry.IsPlayer)
                 continue;
-            TagManager.EditRelationshipTag(Game1.activeClickableMenu, socialEntry);
+            TagManager.EditRelationshipTag(Game1.activeClickableMenu, socialEntry.InternalName);
             return false;
         }
         return true;

@@ -18,6 +18,13 @@ public sealed class ModConfig
             I18n.Config_EditTagKey_Name,
             I18n.Config_EditTagKey_Desc
         );
+        gmcm.AddKeybindList(
+            modManifest,
+            () => EditTagKey,
+            (value) => EditTagKey = value,
+            I18n.Config_EditTagKey_Name,
+            I18n.Config_EditTagKey_Desc
+        );
     }
 
     private void Reset()
