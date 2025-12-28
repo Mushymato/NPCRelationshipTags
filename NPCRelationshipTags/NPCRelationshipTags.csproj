@@ -15,10 +15,10 @@
   <PropertyGroup>
     <Name>NPC Relationship Tags</Name>
     <Authors>mushymato</Authors>
-    <Description>Add tags to NPCs</Description>
+    <Description>Add tags to NPCs and farm animals.</Description>
     <UniqueId>mushymato.NPCRelationshipTags</UniqueId>
-    <UpdateKeys>Nexus:???,GitHub:Mushymato/NPCRelationshipTags</UpdateKeys>
-    <Version>0.2.0</Version>
+    <UpdateKeys>Nexus:40276,GitHub:Mushymato/NPCRelationshipTags</UpdateKeys>
+    <Version>1.0.0</Version>
     <MinimumApiVersion_Behavior>UpdateFull</MinimumApiVersion_Behavior>
     <MinimumGameVersion_Behavior>UpdateFull</MinimumGameVersion_Behavior>
     <Dependencies_VersionBehavior>UpdateFull</Dependencies_VersionBehavior>
