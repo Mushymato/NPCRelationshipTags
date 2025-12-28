@@ -1,0 +1,13 @@
+{
+  "$schema": "https://smapi.io/schemas/content-patcher.json",
+  "Format": "2.8.0",
+  "Changes": [
+    {
+      "Action": "EditData",
+      "Target": "mushymato.NPCRelationshipTags/DefaultTags",
+      "Entries": {
+        "Krobus": "winter root"
+      }
+    },
+  ]
+}

@@ -3,5 +3,7 @@
   "parentheses": "（{{value}}）",
   "label.EditTag": "编辑关系标签",
   "config.EditTagKey.name": "编辑",
-  "config.EditTagKey.desc": "在角色资料页面中，按此键编辑关系标签。\n在社交页面时，按住此键并点击NPC条目以编辑关系标签。\n在动物页面时，按住此键并点击动物条目以编辑关系标签。"
+  "config.EditTagKey.desc": "在角色资料页面中，按此键编辑关系标签。\n在社交页面时，按住此键并点击NPC条目以编辑关系标签。\n在动物页面时，按住此键并点击动物条目以编辑关系标签。",
+  "config.EnableDefaultTags.name": "启用默认标签",
+  "config.EnableDefaultTags.desc": "启用其他mod设置的默认标签。这些默认标签会在你没有设置关系标签时出现。对动物无效。"
 }

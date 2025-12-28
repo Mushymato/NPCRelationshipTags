@@ -1,0 +1,11 @@
+{
+  "Name": "DefaultTagExample",
+  "Author": "mushymato",
+  "Version": "1.0.0",
+  "Description": "Example for adding a default tag to Krobus",
+  "UniqueID": "mushymato.DefaultTagExample",
+  "MinimumApiVersion": "4.0.0",
+  "ContentPackFor": {
+    "UniqueID": "Pathoschild.ContentPatcher"
+  }
+}

@@ -3,5 +3,7 @@
   "parentheses": "({{value}})",
   "label.EditTag": "Edit Relationship Tag",
   "config.EditTagKey.name": "Edit Tag Key",
-  "config.EditTagKey.desc": "While in a character profile page, press this key to edit the relationship tag.\nWhile on the social page, hold this key and click on a NPC entry to edit the relationship tag.\nWhile on the animal page, hold this key and click on an animal entry to edit the relationship tag."
+  "config.EditTagKey.desc": "While in a character profile page, press this key to edit the relationship tag.\nWhile on the social page, hold this key and click on a NPC entry to edit the relationship tag.\nWhile on the animal page, hold this key and click on an animal entry to edit the relationship tag.",
+  "config.EnableDefaultTags.name": "Enable Default Tags",
+  "config.EnableDefaultTags.desc": "Check this option to enable default tags added by other mods via content edits. These will be shown when you didn't set any tags for a particular NPC. No effect on animals."
 }

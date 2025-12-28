@@ -13,14 +13,20 @@ At the moment, you cannot tag the player (i.e. yourself).
 
 The tags are stored in global app data instead of config, if you need to reset the tags, use console command `npc-tag-clear`.
 
+All in all these tags are cosmetic only and have zero gameplay impact.
+
 ## For Mod Authors
 
-You can reference the tag set by the player in various places such as dialogue using the tokenizable string `[Mod_NPCTag <npcId> <fallbackValue>]`.
+You can reference the tag set by the player in various places such as dialogue.
+To do this, use this tokenizable string:
+`[Mod_NPCTag <npcId> <fallbackValue>]`
 
 For example:
 - Original string: `Hey we are [Mod_NPCTag Lewis buddies] right?`
 - Resolved, no tag set: `Hey we are buddies right?`
 - Resolved, Lewis has tag "pals": `Hey we are pals right?`
+
+You can provide default tags to show when the player hasn't set a tag yet, see [example here](./DefaultTagExample/content.json). These tags are also valid for the tokenizable string.
 
 ## Installation
 

@@ -16,6 +16,7 @@ using TagStore = Dictionary<string, string>;
 internal static class TagManager
 {
     internal const string TAG_DATA = "tag_data";
+    internal const string DEFAULT_TAG_ASSET = $"{ModEntry.ModId}\\DefaultTags";
     internal static TagStore tagDataStore = null!;
     internal static IDataHelper dataHelper = null!;
     internal static FieldInfo? profileMenuStatusField = null!;
@@ -26,6 +27,7 @@ internal static class TagManager
         tagDataStore = dataHelper.ReadGlobalData<TagStore>(TAG_DATA) ?? [];
         helper.Events.Content.LocaleChanged += RemeasureW;
         helper.Events.Input.ButtonsChanged += OnButtonsChanged;
+        helper.Events.Content.AssetRequested += OnAssetRequested;
 
         helper.ConsoleCommands.Add("npc-tag-set", "Set a tag for an NPC", ConsolSetNPCTag);
         helper.ConsoleCommands.Add("npc-tag-clear", "Remove all NPC tags", ConsleRemoveAllNPCTag);
@@ -33,6 +35,14 @@ internal static class TagManager
         profileMenuStatusField = AccessTools.DeclaredField(typeof(ProfileMenu), "_status");
 
         TokenParser.RegisterParser("Mod_NPCTag", TS_NPCTag);
+    }
+
+    private static void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
+    {
+        if (e.Name.IsEquivalentTo(DEFAULT_TAG_ASSET))
+        {
+            e.LoadFrom(() => new Dictionary<string, string>(), AssetLoadPriority.Exclusive);
+        }
     }
 
     private static bool TS_NPCTag(string[] query, out string replacement, Random random, Farmer player)
@@ -141,9 +151,29 @@ internal static class TagManager
         tagSetMenu.exitThisMenu();
     }
 
-    internal static bool TryGetTag(string internalName, [NotNullWhen(true)] out string? tagStr)
+    internal static bool TryGetTag(
+        string internalName,
+        [NotNullWhen(true)] out string? tagStr,
+        bool tryDefaultTag = true
+    )
     {
-        return tagDataStore.TryGetValue(internalName, out tagStr);
+        if (!tagDataStore.TryGetValue(internalName, out tagStr))
+        {
+            if (
+                tryDefaultTag
+                && ModEntry.config.EnableDefaultTags
+                && Game1.content.LoadStringReturnNullIfNotFound(string.Concat(DEFAULT_TAG_ASSET, ':', internalName))
+                    is string defaultTag
+            )
+            {
+                tagStr = defaultTag;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return !string.IsNullOrEmpty(tagStr);
     }
 
     private static float smallFontY;
@@ -178,7 +208,7 @@ internal static class TagManager
         AnimalPage.AnimalEntry entry
     )
     {
-        if (!TryGetTag(entry.InternalName, out string? tagStr))
+        if (!TryGetTag(entry.InternalName, out string? tagStr, false))
             return;
 
         int maxWidth = IClickableMenu.borderWidth * 3 / 2 + 192 - 20 + 96;
