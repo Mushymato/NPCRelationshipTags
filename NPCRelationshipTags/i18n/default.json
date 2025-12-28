@@ -1,5 +1,7 @@
 {
   "$schema": "https://smapi.io/schemas/i18n.json",
   "parentheses": "({{value}})",
-  "label.set-tag": "Set Relationship Tag"
+  "label.set-tag": "Set Relationship Tag",
+  "config.EditTagKey.name": "Edit Tag Hotkey",
+  "config.EditTagKey.desc": "While on the social page, hold this key and click on a NPC entry to edit the relationship tag.\nWhile in a character profile page, press this key to edit the relationship tag."
 }

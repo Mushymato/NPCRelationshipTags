@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
@@ -6,6 +7,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Menus;
+using StardewValley.TokenizableStrings;
 
 namespace NPCRelationshipTags;
 
@@ -22,17 +24,33 @@ internal static class TagManager
     {
         dataHelper = helper.Data;
         tagDataStore = dataHelper.ReadGlobalData<TagStore>(TAG_DATA) ?? [];
-        helper.Events.GameLoop.GameLaunched += RemeasureW;
         helper.Events.Content.LocaleChanged += RemeasureW;
         helper.Events.Input.ButtonsChanged += OnButtonsChanged;
 
-        helper.ConsoleCommands.Add("npc-tag-add", "Add npc tag", ConsoleAddNPCTag);
-        helper.ConsoleCommands.Add("npc-tag-clear", "Remove all npc tag", ConsleRemoveAllNPCTag);
+        helper.ConsoleCommands.Add("npc-tag-set", "Set a tag for an NPC", ConsolSetNPCTag);
+        helper.ConsoleCommands.Add("npc-tag-clear", "Remove all NPC tags", ConsleRemoveAllNPCTag);
 
         profileMenuStatusField = AccessTools.DeclaredField(typeof(ProfileMenu), "_status");
+
+        TokenParser.RegisterParser("Mod_NPCTag", TS_NPCTag);
     }
 
-    private static void ConsoleAddNPCTag(string cmd, string[] args)
+    private static bool TS_NPCTag(string[] query, out string replacement, Random random, Farmer player)
+    {
+        replacement = "NPCTag";
+        if (
+            !ArgUtility.TryGet(query, 1, out string npcId, out string error)
+            || !ArgUtility.TryGetOptional(query, 2, out string fallback, out error, defaultValue: replacement)
+        )
+        {
+            ModEntry.Log(error, LogLevel.Error);
+            return false;
+        }
+        replacement = TryGetTag(npcId, out string? tagStr) ? tagStr : fallback;
+        return true;
+    }
+
+    private static void ConsolSetNPCTag(string cmd, string[] args)
     {
         if (
             !ArgUtility.TryGet(args, 0, out string npcId, out string error)
@@ -44,6 +62,7 @@ internal static class TagManager
         }
         tagDataStore[npcId] = tag;
         dataHelper.WriteGlobalData(TAG_DATA, tagDataStore);
+        ModEntry.Log($"Set tag to '{tag}' for NPC '{npcId}'", LogLevel.Info);
     }
 
     private static void ConsleRemoveAllNPCTag(string cmd, string[] args)
@@ -53,7 +72,7 @@ internal static class TagManager
         ModEntry.Log("Cleared all tag data", LogLevel.Info);
     }
 
-    private static void RemeasureW(object? sender, EventArgs e)
+    internal static void RemeasureW(object? sender, EventArgs e)
     {
         smallFontY = Game1.smallFont.MeasureString("W").Y;
     }
@@ -64,33 +83,59 @@ internal static class TagManager
             return;
         if (!ModEntry.config.EditTagKey.JustPressed())
             return;
-        if (!TryGetTag(profileMenu.Current.InternalName, out string? tagStr))
-            tagStr = "";
-        NamingMenu tagSetMenu = new(null, I18n.Label_SetTag(), tagStr);
-        tagSetMenu.doneNaming = (s) => UpdateTag(profileMenu, tagSetMenu, profileMenu.Current.InternalName, s);
-        tagSetMenu.minLength = 0;
-        profileMenu.SetChildMenu(tagSetMenu);
+        EditRelationshipTag(
+            profileMenu,
+            profileMenu.Current,
+            (s) =>
+            {
+                if (string.IsNullOrEmpty(s))
+                {
+                    profileMenuStatusField?.SetValue(profileMenu, "");
+                }
+                else
+                {
+                    profileMenuStatusField?.SetValue(profileMenu, Utility.capitalizeFirstLetter(s));
+                }
+                profileMenu.SetupLayout();
+            }
+        );
     }
 
-    private static void UpdateTag(ProfileMenu profileMenu, NamingMenu tagSetMenu, string npcId, string s)
+    internal static void EditRelationshipTag(
+        IClickableMenu priorMenu,
+        SocialPage.SocialEntry socialEntry,
+        NamingMenu.doneNamingBehavior? postDoneNaming = null
+    )
+    {
+        string key = socialEntry.InternalName;
+        if (!TryGetTag(socialEntry.InternalName, out string? tagStr))
+            tagStr = "";
+        NamingMenu tagSetMenu = new(null, I18n.Label_SetTag(), tagStr);
+        NamingMenu.doneNamingBehavior doneNaming = (s) => UpdateTag(priorMenu, tagSetMenu, socialEntry.InternalName, s);
+        if (postDoneNaming != null)
+        {
+            doneNaming = (NamingMenu.doneNamingBehavior)Delegate.Combine(doneNaming, postDoneNaming);
+        }
+        tagSetMenu.doneNaming = doneNaming;
+        tagSetMenu.minLength = 0;
+        priorMenu.SetChildMenu(tagSetMenu);
+    }
+
+    private static void UpdateTag(IClickableMenu profileMenu, NamingMenu tagSetMenu, string npcId, string s)
     {
         if (string.IsNullOrEmpty(s))
         {
             tagDataStore.Remove(npcId);
-            profileMenuStatusField?.SetValue(profileMenu, "");
-            profileMenu.SetupLayout();
         }
         else
         {
             tagDataStore[npcId] = s;
-            profileMenuStatusField?.SetValue(profileMenu, Utility.capitalizeFirstLetter(s));
-            profileMenu.SetupLayout();
         }
         dataHelper.WriteGlobalData(TAG_DATA, tagDataStore);
         tagSetMenu.exitThisMenu();
     }
 
-    internal static bool TryGetTag(string internalName, out string? tagStr)
+    internal static bool TryGetTag(string internalName, [NotNullWhen(true)] out string? tagStr)
     {
         return tagDataStore.TryGetValue(internalName, out tagStr);
     }

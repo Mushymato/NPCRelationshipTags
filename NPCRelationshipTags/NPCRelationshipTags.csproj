@@ -18,7 +18,7 @@
     <Description>Add tags to NPCs</Description>
     <UniqueId>mushymato.NPCRelationshipTags</UniqueId>
     <UpdateKeys>Nexus:???,GitHub:Mushymato/NPCRelationshipTags</UpdateKeys>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <MinimumApiVersion_Behavior>UpdateFull</MinimumApiVersion_Behavior>
     <MinimumGameVersion_Behavior>UpdateFull</MinimumGameVersion_Behavior>
     <Dependencies_VersionBehavior>UpdateFull</Dependencies_VersionBehavior>

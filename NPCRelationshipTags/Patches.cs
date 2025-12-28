@@ -1,8 +1,10 @@
 using System.Reflection.Emit;
 using HarmonyLib;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
+using static StardewValley.Menus.AnimalPage;
 
 namespace NPCRelationshipTags;
 
@@ -18,6 +20,10 @@ internal static class Patches
                 transpiler: new HarmonyMethod(typeof(Patches), nameof(SocialPage_draw_drawNPCSlot))
             );
             harmony.Patch(
+                original: AccessTools.DeclaredMethod(typeof(SocialPage), nameof(SocialPage.receiveLeftClick)),
+                prefix: new HarmonyMethod(typeof(Patches), nameof(SocialPage_receiveLeftClick_Postfix))
+            );
+            harmony.Patch(
                 original: AccessTools.DeclaredMethod(typeof(ProfileMenu), "_SetCharacter"),
                 postfix: new HarmonyMethod(typeof(Patches), nameof(ProfileMenu_SetCharacter_Postfix))
             );
@@ -26,6 +32,36 @@ internal static class Patches
         {
             ModEntry.Log($"Failed to patch:\n{err}", LogLevel.Error);
         }
+    }
+
+    private static void AnimalEntry_drawNPCSlot_Postfix(SpriteBatch b, int i)
+    {
+        throw new NotImplementedException();
+    }
+
+    private static bool SocialPage_receiveLeftClick_Postfix(SocialPage __instance, int x, int y, bool playSound = true)
+    {
+        if (!ModEntry.config.EditTagKey.IsDown())
+        {
+            return true;
+        }
+        for (int i = 0; i < __instance.characterSlots.Count; i++)
+        {
+            if (
+                i < __instance.slotPosition
+                || i >= __instance.slotPosition + 5
+                || !__instance.characterSlots[i].bounds.Contains(x, y)
+            )
+            {
+                continue;
+            }
+            SocialPage.SocialEntry socialEntry = __instance.GetSocialEntry(i);
+            if (socialEntry.InternalName == null || !socialEntry.IsMet)
+                continue;
+            TagManager.EditRelationshipTag(Game1.activeClickableMenu, socialEntry);
+            return false;
+        }
+        return true;
     }
 
     private static void ProfileMenu_SetCharacter_Postfix(

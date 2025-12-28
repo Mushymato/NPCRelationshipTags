@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using NPCRelationshipTags.Integration;
 using StardewModdingAPI;
+using StardewModdingAPI.Events;
 
 namespace NPCRelationshipTags;
 
@@ -22,6 +24,20 @@ public sealed class ModEntry : Mod
 
         TagManager.Register(helper);
         Patches.Register();
+
+        helper.Events.GameLoop.GameLaunched += OnGameLaunched;
+    }
+
+    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
+    {
+        TagManager.RemeasureW(sender, e);
+        if (
+            Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu")
+            is IGenericModConfigMenuApi gmcm
+        )
+        {
+            config.Register(Helper, ModManifest, gmcm);
+        }
     }
 
     /// <summary>SMAPI static monitor Log wrapper</summary>
