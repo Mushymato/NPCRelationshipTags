@@ -1,12 +1,15 @@
 # NPCRelationshipTags
 
-Allows players to add relationship tags to NPCs, this replaces the normal relationship tags like `(single)`, `(dating)` etc. At the moment, you cannot tag the player (i.e. yourself).
-
+Allows players to add relationship tags to NPCs, this replaces the normal relationship tags like `(single)`, `(dating)` etc.
 There are 2 ways to do this:
-1. Open the social page, then hold `RightShift` and click on the desired NPC.
-2. In the profile page of a NPC, press `RightShift`.
+1. Open the social page on the game pause menu, then hold `RightShift` and click on the NPC to add or edit their tag.
+2. In the profile page of a NPC, press `RightShift` to add or edit their tag.
 
-The key used is configured via **EditTagKey**.
+You can also add tags to farm animals by going to the animals page on the game pause menu, then hold `RightShift` and click on the desired animal.
+
+The key used in all cases can be configured via **EditTagKey**.
+
+At the moment, you cannot tag the player (i.e. yourself).
 
 The tags are stored in global app data instead of config, if you need to reset the tags, use console command `npc-tag-clear`.
 
