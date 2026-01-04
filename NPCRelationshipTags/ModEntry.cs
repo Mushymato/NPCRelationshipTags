@@ -23,7 +23,7 @@ public sealed class ModEntry : Mod
         config = helper.ReadConfig<ModConfig>();
 
         TagManager.Register(helper);
-        Patches.Register();
+        Patches.Register(helper);
 
         helper.Events.GameLoop.GameLaunched += OnGameLaunched;
     }

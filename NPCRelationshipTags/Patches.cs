@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using Microsoft.Xna.Framework.Graphics;
@@ -9,7 +10,7 @@ namespace NPCRelationshipTags;
 
 internal static class Patches
 {
-    internal static void Register()
+    internal static void Register(IModHelper helper)
     {
         Harmony harmony = new(ModEntry.ModId);
         try
@@ -39,6 +40,72 @@ internal static class Patches
         {
             ModEntry.Log($"Failed to patch:\n{err}", LogLevel.Error);
         }
+
+        PatchOtherModDrawNPCSlot(
+            helper,
+            harmony,
+            "Rafseazz.RidgesideVillage",
+            "RidgesideVillage.Dateables",
+            "SocialPage_drawNPCSlot_Postfix"
+        );
+        PatchOtherModDrawNPCSlot(
+            helper,
+            harmony,
+            "SunberryTeam.SBVSMAPI",
+            "SunberryVillage.Code.Menus.SocialPagePatches",
+            "SocialPage_drawNPCSlot_Postfix"
+        );
+    }
+
+    private static void PatchOtherModDrawNPCSlot(
+        IModHelper helper,
+        Harmony harmony,
+        string modId,
+        string className,
+        string methodName
+    )
+    {
+        try
+        {
+            IModInfo? modInfo = helper.ModRegistry.Get(modId);
+            if (
+                modInfo?.GetType().GetProperty("Mod")?.GetValue(modInfo) is not IMod mod
+                || mod.GetType().Assembly.GetType(className) is not Type otherModType
+                || AccessTools.DeclaredMethod(otherModType, methodName) is not MethodInfo methodInfo
+            )
+            {
+                if (modInfo != null)
+                {
+                    ModEntry.Log($"Mod {modId} is loaded, but could not find patch target", LogLevel.Warn);
+                }
+                return;
+            }
+            ModEntry.Log($"Patch {modId} {className}.{methodName}", LogLevel.Debug);
+            harmony.Patch(
+                methodInfo,
+                prefix: new HarmonyMethod(typeof(Patches), nameof(OtherMod_Skip_SocialPage_drawNPCSlot_Postfix))
+            );
+        }
+        catch (Exception err)
+        {
+            ModEntry.Log($"Failed to patch {modId} {className}.{methodName}:\n{err}", LogLevel.Warn);
+        }
+    }
+
+    private static bool OtherMod_Skip_SocialPage_drawNPCSlot_Postfix(object[] __args)
+    {
+        if (__args.Length < 3)
+            return true;
+        SocialPage __instance = (SocialPage)__args[0];
+        int i = (int)__args[2];
+        SocialPage.SocialEntry entry = __instance.SocialEntries[i];
+        if (entry == null)
+            return true;
+        if (!entry.IsMet)
+            return true;
+        if (!TagManager.TryGetTag(entry.InternalName, out _))
+            return true;
+        return false;
     }
 
     private static bool AnimalPage_receiveLeftClick_Postfix(AnimalPage __instance, int x, int y, bool playSound = true)
